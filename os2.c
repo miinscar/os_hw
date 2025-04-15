@@ -171,7 +171,9 @@ int main(int argc, char* argv[]) {
         cur->operations = malloc((cur->code_bytes / 2) * sizeof(code));
         fread(cur->operations, ((cur->code_bytes / 2) * sizeof(code)), 1, stdin);
         //여기에 코드 작성         // job node 초기화 (과제#1)
+        INIT_LIST_HEAD(&cur->job);
 		//여기에 코드 작성         // job queue에 cur->job 추가 (과제#1)
+        list_add_tail(&cur->job, &job_q);
         cur = malloc(sizeof(*cur));
     }
 
@@ -184,8 +186,9 @@ int main(int argc, char* argv[]) {
     cur->operations[0].operation = 255; // 0xFF
     cur->operations[0].length = 0;
     //여기에 코드 작성           // job node 초기화 (과제#1)
+    INIT_LIST_HEAD(&cur->job);
     //여기에 코드 작성           // job queue에 cur->job 추가 (과제#1)
-
+    list_add_tail(&cur->job, &job_q);
     //프로세스 추가 끝
 
     list_for_each_entry(cur, &job_q, job) { //프로세스 개수 세기
@@ -207,17 +210,25 @@ int main(int argc, char* argv[]) {
     while(Clock <=totalclock){
         list_for_each_entry(cur,&job_q, job) {
             if (Clock == cur->arrival_time) {
-                //여기에 코드 작성           
+                //여기에 코드 작성    
+                INIT_LIST_HEAD(&cur->ready);       
                 //여기에 코드 작성            
+                list_add_tail(&cur->ready, &ready_q);
                 //여기에 코드 작성                            //로드된 프로세스 정보 출력
+                printf("%04d CPU: Loaded PID: %03d\tArrival: %03d\tCodesize: %03d\tPC: %03d\n", Clock, cur->pid, cur->arrival_time, cur->code_bytes, PC);
+
             }//clock과 arrival_time이 같으면 ready_q에 추가
         }
         if(Clock == totalclock){
             list_for_each_entry(cur,&wait_q,wait){
                 if(present_pid == cur->pid){
-                    //여기에 코드 작성         
-			        //여기에 코드 작성         
-			        //여기에 코드 작성        
+                    //여기에 코드 작성
+                    INIT_LIST_HEAD(&cur->ready);        
+			        //여기에 코드 작성   
+                    list_add_tail(&cur->ready, &ready_q);      
+			        //여기에 코드 작성
+                    list_del_init(&cur->wait);               
+                    
                     break;
                 }
                 break;
@@ -237,13 +248,17 @@ int main(int argc, char* argv[]) {
                     PC++; // CPU 작업이 끝나면 PC 증가
                     if(PC == cur->code_bytes/2){
                         //여기에 코드작성                   //프로세스가 끝나면 ready_q에서 삭제
+                        list_del_init(&cur->ready);
                         procs_cnt +=1;
                         if(Procs_cnt == procs_cnt){
                             break;
                         }//프로세스의 개수와 삭제될때마다 추가된 프로세스 개수가 같으면 끝
-                        present_pid = -1;
+                        present_pid = -1;                
                         //여기에 코드작성                   // context switch 되기 때문에 Clock에 10 추가
-                        //여기에 코드작성                   // Total clock 증가
+                        Clock += 10;
+                        //여기에 코드작성                   // Total clock 증가                        
+                        totalclock += 10;
+
                         switch_cnt++; //몇번 switching 됐나 카운트
                         PC=0;
                     }
@@ -257,10 +272,16 @@ int main(int argc, char* argv[]) {
                 if(present_pid == cur->pid && cur->operations[PC].operation == 1 && cur->operations[PC].length != Clock-before_clk){
                     Total_Clock(Clock, cur, PC);
                     //여기에 코드 작성              //IO작업 문구 출력
+                    printf("%04d CPU: OP_IO START len: %03d ends at: %04d\n", Clock, cur->operations[PC].length, totalclock);
                     //여기에 코드 작성              //wait노드 초기화
+                    INIT_LIST_HEAD(&cur->wait);
                     //여기에 코드 작성              //wait queue에 wait노드 추가
+                    list_add_tail(&cur->wait, &wait_q);
                     //여기에 코드 작성              //ready_q에서 삭제
+                    list_del_init(&cur->ready);
                     //여기에 코드 작성              //Idle 시간 확인
+                    Idle += cur->operations[PC].length;
+
                     before_clk = Clock;
 
                 }
@@ -276,12 +297,6 @@ int main(int argc, char* argv[]) {
     double u =0.0; 
     u =(totalclock-total_Idle);
     //여기에 코드 작성           //TOTAL CLOCK 정보 출력
-
+    printf("*** TOTAL CLOCKS: %04d IDLE: %04d UTIL: %2.2f%%\n", totalclock, total_Idle, (u / totalclock) * 100.0);
 
 }
-
-
-
-
-
-
