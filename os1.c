@@ -154,15 +154,19 @@ int main(int argc, char* argv[]){
         cur->operations = malloc((cur->code_bytes/2)*sizeof(code));
         fread(cur->operations,((cur->code_bytes/2)*sizeof(code)),1,stdin);
 		//여기에 코드 작성         // job노드 초기화
+		INIT_LIST_HEAD(&cur->job);
 		//여기에 코드 작성         // job queue에 job노드 추가
-        
+        list_add_tail(&cur->job, &job_q);
 		cur = malloc(sizeof(*cur));
     }
 
 	//반대로 출력하는 코드 작성
-  
+	process *p;
+	list_for_each_entry_reverse(p, &job_q, job) {
+		printf("PID: %03d\tARRIVAL: %03d\tCODESIZE: %03d\n", p->pid, p->arrival_time, p->code_bytes);
+		for (int i = 0; i < p->code_bytes / 2; ++i) {
+			printf("%d %d\n", p->operations[i].operation, p->operations[i].length);
+		}
+	}
 
-
-
-	
 }
