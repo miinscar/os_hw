@@ -223,11 +223,12 @@ int main(int argc, char* argv[]) {
             list_for_each_entry(cur,&wait_q,wait){
                 if(present_pid == cur->pid){
                     //여기에 코드 작성
-                    INIT_LIST_HEAD(&cur->ready);        
-			        //여기에 코드 작성   
-                    list_add_tail(&cur->ready, &ready_q);      
+                    list_del_init(&cur->wait);
+                            
 			        //여기에 코드 작성
-                    list_del_init(&cur->wait);               
+			        INIT_LIST_HEAD(&cur->ready);   
+                    list_add(&cur->ready, &ready_q);      
+			        //여기에 코드 작성              
                     
                     break;
                 }
