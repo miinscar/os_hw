@@ -225,10 +225,11 @@ int main(int argc, char* argv[]) {
                     //여기에 코드 작성
                     list_del_init(&cur->wait);
                             
-			        //여기에 코드 작성
-			        INIT_LIST_HEAD(&cur->ready);   
-                    list_add(&cur->ready, &ready_q);      
-			        //여기에 코드 작성              
+		   //여기에 코드 작성
+		   INIT_LIST_HEAD(&cur->ready); 
+		   //여기에 코드 작성
+                  list_add(&cur->ready, &ready_q);      
+			                      
                     
                     break;
                 }
